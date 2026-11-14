@@ -12,18 +12,11 @@
 
 </div>
 
-```mermaid
-flowchart LR
-    F[(Fichero codificado<br/>fila,columna,código)] --> L[Hilo lector]
-    L -->|"sem hay_espacio / hay_dato"| B[[Buffer circular<br/>tamaño configurable]]
-    B --> D1[Decodificador 0<br/>columnas 0-27]
-    B --> D2[Decodificador 1<br/>columnas 27-54]
-    B --> D3[Decodificador N<br/>columnas ...]
-    D1 & D2 & D3 -->|mutex_lista| LL[Lista enlazada compartida]
-    LL -->|sem despierta_dibu| P[Hilo dibujante]
-    P --> O[Imagen ASCII<br/>fichero + pantalla]
-    D1 & D2 & D3 -.->|sem escritor| S[(Estadísticas)]
-```
+<p align="center">
+  <img src="docs/screenshots/decodificador.png" width="657" alt="Terminal con la imagen ASCII de una cara sonriente reconstruida por el decodificador concurrente a partir de csmile.txt y las primeras líneas de estadísticas del hilo lector">
+  <br>
+  <sub>Salida real del programa.</sub>
+</p>
 
 ## En pocas palabras
 
@@ -55,6 +48,19 @@ flowchart LR
 - **Entrega 2 — decodificador concurrente:** lee un fichero codificado (una línea por carácter con `fila,columna,código`), reconstruye la imagen ASCII y la escribe en un fichero de salida y por pantalla. En un fichero de estadísticas anota cuántas líneas y caracteres ha procesado cada hilo.
 
 ## Arquitectura
+
+```mermaid
+flowchart LR
+    F[(Fichero codificado<br/>fila,columna,código)] --> L[Hilo lector]
+    L -->|"sem hay_espacio / hay_dato"| B[[Buffer circular<br/>tamaño configurable]]
+    B --> D1[Decodificador 0<br/>columnas 0-27]
+    B --> D2[Decodificador 1<br/>columnas 27-54]
+    B --> D3[Decodificador N<br/>columnas ...]
+    D1 & D2 & D3 -->|mutex_lista| LL[Lista enlazada compartida]
+    LL -->|sem despierta_dibu| P[Hilo dibujante]
+    P --> O[Imagen ASCII<br/>fichero + pantalla]
+    D1 & D2 & D3 -.->|sem escritor| S[(Estadísticas)]
+```
 
 - El **hilo lector** produce datos en el buffer circular; los **decodificadores** los consumen según su rango de columnas.
 - Los caracteres válidos se añaden a una **lista enlazada compartida** protegida por `mutex_lista`.
